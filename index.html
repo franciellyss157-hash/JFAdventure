@@ -15,7 +15,7 @@ box-sizing:border-box;
 body{
 overflow:hidden;
 font-family:Arial;
-background:#120018;
+background:black;
 }
 
 #menu{
@@ -26,15 +26,15 @@ display:flex;
 flex-direction:column;
 justify-content:center;
 align-items:center;
-background:linear-gradient(#1b0027,#3d0058);
+background:linear-gradient(#1a0029,#440066);
 z-index:10;
 }
 
 #menu h1{
 font-size:60px;
-color:#d38cff;
-text-shadow:0 0 25px #a200ff;
+color:#d18cff;
 margin-bottom:20px;
+text-shadow:0 0 20px purple;
 }
 
 #menu button{
@@ -44,13 +44,7 @@ border:none;
 border-radius:15px;
 background:#8a2be2;
 color:white;
-cursor:pointer;
-box-shadow:0 0 20px #a200ff;
-}
-
-canvas{
-display:none;
-background:#4d8f4d;
+box-shadow:0 0 20px purple;
 }
 
 #hud{
@@ -59,11 +53,16 @@ top:10px;
 left:10px;
 color:white;
 font-size:22px;
-z-index:5;
 display:none;
+z-index:5;
 background:rgba(0,0,0,0.5);
 padding:10px;
 border-radius:10px;
+}
+
+canvas{
+display:none;
+background:#4d8f4d;
 }
 
 #controls{
@@ -76,25 +75,15 @@ padding:20px;
 z-index:6;
 }
 
-.move-buttons{
-display:grid;
-grid-template-columns:70px 70px;
-gap:10px;
-}
-
-.action-buttons{
-display:flex;
-gap:10px;
-}
-
 .ctrl{
 width:70px;
 height:70px;
 border:none;
 border-radius:50%;
-background:rgba(138,43,226,0.8);
+background:#8a2be2;
 color:white;
 font-size:25px;
+margin:5px;
 }
 </style>
 </head>
@@ -107,22 +96,21 @@ font-size:25px;
 </div>
 
 <div id="hud">
-❤️ Vidas: <span id="vidas">3</span>
-<br>
-🔫 Arma: <span id="arma">Pistola</span>
-<br>
+❤️ Vidas: <span id="vidas">3</span><br>
+🧟 Zumbis: <span id="zumbis">0</span><br>
 🗺️ Fase: <span id="fase">1</span>
 </div>
 
 <div id="controls">
-<div class="move-buttons">
-<button class="ctrl" ontouchstart="move('left')" ontouchend="stopMove('left')">⬅️</button>
-<button class="ctrl" ontouchstart="move('right')" ontouchend="stopMove('right')">➡️</button>
-<button class="ctrl" ontouchstart="move('up')" ontouchend="stopMove('up')">⬆️</button>
-<button class="ctrl" ontouchstart="move('down')" ontouchend="stopMove('down')">⬇️</button>
+<div>
+<button class="ctrl" ontouchstart="keys.left=true" ontouchend="keys.left=false">⬅️</button>
+<button class="ctrl" ontouchstart="keys.right=true" ontouchend="keys.right=false">➡️</button>
+<br>
+<button class="ctrl" ontouchstart="keys.up=true" ontouchend="keys.up=false">⬆️</button>
+<button class="ctrl" ontouchstart="keys.down=true" ontouchend="keys.down=false">⬇️</button>
 </div>
 
-<div class="action-buttons">
+<div>
 <button class="ctrl" onclick="shoot()">🔫</button>
 </div>
 </div>
@@ -130,127 +118,127 @@ font-size:25px;
 <canvas id="game"></canvas>
 
 <script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-let gameStarted = false;
-let vidas = 3;
 let fase = 1;
+let vidas = 3;
 
 const player = {
 x:100,
 y:300,
-width:40,
-height:40,
-speed:5,
-color:'#ffe0bd'
+w:40,
+h:40,
+speed:5
 };
 
-const keys = {};
+const keys = {
+left:false,
+right:false,
+up:false,
+down:false
+};
+
 const bullets = [];
 const zombies = [];
-const guns = [
-{x:500,y:350,collected:false},
-{x:1200,y:250,collected:false},
-{x:1900,y:400,collected:false}
-];
-
-const houses = [
-{x:700,y:250,width:160,height:180},
-{x:1600,y:220,width:180,height:200}
-];
-
-const platforms = [
-{x:300,y:500,width:300,height:20},
-{x:900,y:420,width:250,height:20},
-{x:1500,y:350,width:300,height:20}
-];
-
-let worldOffset = 0;
 
 function spawnZombies(){
+
 zombies.length = 0;
 
 for(let i=0;i<fase+2;i++){
+
 zombies.push({
-x:800 + i*250,
+x:600 + i*150,
 y:300,
-width:40,
-height:40,
-speed:1 + fase*0.3
+w:40,
+h:40,
+speed:1 + fase*0.2
 });
+
 }
+
+document.getElementById("zumbis").innerText = zombies.length;
 }
 
 function startGame(){
-document.getElementById('menu').style.display='none';
-document.getElementById('hud').style.display='block';
-document.getElementById('controls').style.display='flex';
-canvas.style.display='block';
 
-gameStarted = true;
+document.getElementById("menu").style.display="none";
+document.getElementById("hud").style.display="block";
+document.getElementById("controls").style.display="flex";
+canvas.style.display="block";
+
 spawnZombies();
+
 gameLoop();
 }
 
-document.addEventListener('keydown',(e)=>{
-keys[e.key.toLowerCase()] = true;
+document.addEventListener("keydown",(e)=>{
+
+if(e.key=="a") keys.left=true;
+if(e.key=="d") keys.right=true;
+if(e.key=="w") keys.up=true;
+if(e.key=="s") keys.down=true;
+
 });
 
-document.addEventListener('keyup',(e)=>{
-keys[e.key.toLowerCase()] = false;
+document.addEventListener("keyup",(e)=>{
+
+if(e.key=="a") keys.left=false;
+if(e.key=="d") keys.right=false;
+if(e.key=="w") keys.up=false;
+if(e.key=="s") keys.down=false;
+
 });
-
-function move(dir){
-keys[dir] = true;
-}
-
-function stopMove(dir){
-keys[dir] = false;
-}
 
 function shoot(){
+
 bullets.push({
-x:player.x + player.width,
+x:player.x + 40,
 y:player.y + 15,
-width:15,
-height:5,
+w:15,
+h:5,
 speed:10
 });
+
 }
 
 function update(){
 
-if(keys['a'] || keys['left']) player.x -= player.speed;
-if(keys['d'] || keys['right']) player.x += player.speed;
-if(keys['w'] || keys['up']) player.y -= player.speed;
-if(keys['s'] || keys['down']) player.y += player.speed;
+if(keys.left) player.x -= player.speed;
+if(keys.right) player.x += player.speed;
+if(keys.up) player.y -= player.speed;
+if(keys.down) player.y += player.speed;
 
-if(player.x > canvas.width/2){
-worldOffset += player.speed;
-player.x = canvas.width/2;
-}
+bullets.forEach((bullet,bIndex)=>{
 
-bullets.forEach((bullet,index)=>{
 bullet.x += bullet.speed;
 
 zombies.forEach((zombie,zIndex)=>{
+
 if(
-bullet.x < zombie.x + zombie.width &&
-bullet.x + bullet.width > zombie.x &&
-bullet.y < zombie.y + zombie.height &&
-bullet.y + bullet.height > zombie.y
+bullet.x < zombie.x + zombie.w &&
+bullet.x + bullet.w > zombie.x &&
+bullet.y < zombie.y + zombie.h &&
+bullet.y + bullet.h > zombie.y
 ){
+
 zombies.splice(zIndex,1);
-bullets.splice(index,1);
+bullets.splice(bIndex,1);
+
+document.getElementById("zumbis").innerText = zombies.length;
+
 }
+
 });
+
 });
 
 zombies.forEach((zombie)=>{
+
 if(zombie.x > player.x){
 zombie.x -= zombie.speed;
 }else{
@@ -264,117 +252,93 @@ zombie.y += zombie.speed;
 }
 
 if(
-player.x < zombie.x + zombie.width &&
-player.x + player.width > zombie.x &&
-player.y < zombie.y + zombie.height &&
-player.y + player.height > zombie.y
+player.x < zombie.x + zombie.w &&
+player.x + player.w > zombie.x &&
+player.y < zombie.y + zombie.h &&
+player.y + player.h > zombie.y
 ){
+
 vidas--;
-document.getElementById('vidas').innerText = vidas;
+
+document.getElementById("vidas").innerText = vidas;
+
 player.x = 100;
 player.y = 300;
 
 if(vidas <= 0){
-alert('GAME OVER');
+
+alert("GAME OVER");
 location.reload();
+
 }
+
 }
+
 });
 
-if(zombies.length === 0){
+if(zombies.length == 0){
+
 fase++;
-document.getElementById('fase').innerText = fase;
+
+document.getElementById("fase").innerText = fase;
 
 if(fase > 3){
-alert('VOCÊ ZEROU O JFAdventure!');
+
+alert("VOCÊ VENCEU!");
+
 location.reload();
+
 }else{
+
 spawnZombies();
-}
-}
-}
 
-function drawBackground(){
-ctx.fillStyle='#4d8f4d';
-ctx.fillRect(0,0,canvas.width,canvas.height);
-
-ctx.fillStyle='#2f6d2f';
-ctx.fillRect(0,550,canvas.width,200);
 }
 
-function drawPlatforms(){
-ctx.fillStyle='#8b5a2b';
-
-platforms.forEach((platform)=>{
-ctx.fillRect(platform.x - worldOffset,platform.y,platform.width,platform.height);
-});
 }
 
-function drawHouses(){
-houses.forEach((house)=>{
-ctx.fillStyle='#8b4513';
-ctx.fillRect(house.x - worldOffset,house.y,house.width,house.height);
-
-ctx.fillStyle='#552200';
-ctx.fillRect(house.x + 60 - worldOffset,house.y + 100,40,80);
-});
 }
 
-function drawGuns(){
-guns.forEach((gun)=>{
-if(!gun.collected){
-ctx.fillStyle='black';
-ctx.fillRect(gun.x - worldOffset,gun.y,30,10);
+function draw(){
 
-if(
-player.x < gun.x - worldOffset + 30 &&
-player.x + player.width > gun.x - worldOffset &&
-player.y < gun.y + 10 &&
-player.y + player.height > gun.y
-){
-gun.collected = true;
-document.getElementById('arma').innerText = 'Rifle';
-}
-}
-});
-}
+ctx.clearRect(0,0,canvas.width,canvas.height);
 
-function drawPlayer(){
-ctx.fillStyle=player.color;
-ctx.fillRect(player.x,player.y,player.width,player.height);
-}
+ctx.fillStyle="#2d5f2d";
+ctx.fillRect(0,500,canvas.width,200);
 
-function drawBullets(){
-ctx.fillStyle='yellow';
+ctx.fillStyle="#654321";
+ctx.fillRect(300,350,100,150);
+
+ctx.fillStyle="purple";
+ctx.fillRect(1000,300,150,200);
+
+ctx.fillStyle="#ffe0bd";
+ctx.fillRect(player.x,player.y,player.w,player.h);
+
+ctx.fillStyle="yellow";
 
 bullets.forEach((bullet)=>{
-ctx.fillRect(bullet.x,bullet.y,bullet.width,bullet.height);
-});
-}
 
-function drawZombies(){
-ctx.fillStyle='green';
+ctx.fillRect(bullet.x,bullet.y,bullet.w,bullet.h);
+
+});
+
+ctx.fillStyle="green";
 
 zombies.forEach((zombie)=>{
-ctx.fillRect(zombie.x - worldOffset,zombie.y,zombie.width,zombie.height);
+
+ctx.fillRect(zombie.x,zombie.y,zombie.w,zombie.h);
+
 });
+
 }
 
 function gameLoop(){
-if(!gameStarted) return;
 
 update();
-ctx.clearRect(0,0,canvas.width,canvas.height);
-
-drawBackground();
-drawPlatforms();
-drawHouses();
-drawGuns();
-drawPlayer();
-drawBullets();
-drawZombies();
+draw();
 
 requestAnimationFrame(gameLoop);
+
 }
 </script>
 
