@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JFAdventure</title>
+
+<style>
+body{
+margin:0;
+background:#120018;
+font-family:Arial;
+overflow:hidden;
+color:white;
+}
+
+#menu{
+position:absolute;
+width:100%;
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+background:linear-gradient(#1d0028,#320046);
+}
+
+h1{
+font-size:50px;
+color:#c86cff;
+text-shadow:0 0 20px #a200ff;
+}
+
+button{
+padding:15px 40px;
+font-size:20px;
+border:none;
+border-radius:15px;
+background:#8a2be2;
+color:white;
+cursor:pointer;
+margin-top:20px;
+box-shadow:0 0 15px #a200ff;
+}
+
+canvas{
+display:none;
+background:#3c7d3c;
+}
+</style>
+</head>
+
+<body>
+
+<div id="menu">
+<h1>JFAdventure</h1>
+
+<button onclick="startGame()">
+Jogar
+</button>
+</div>
+
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let player = {
+x:100,
+y:100,
+size:40,
+speed:5
+};
+
+function startGame(){
+document.getElementById("menu").style.display="none";
+canvas.style.display="block";
+
+gameLoop();
+}
+
+let keys = {};
+
+document.addEventListener("keydown",(e)=>{
+keys[e.key]=true;
+});
+
+document.addEventListener("keyup",(e)=>{
+keys[e.key]=false;
+});
+
+function update(){
+
+if(keys["w"]) player.y -= player.speed;
+if(keys["s"]) player.y += player.speed;
+if(keys["a"]) player.x -= player.speed;
+if(keys["d"]) player.x += player.speed;
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+ctx.fillStyle="#654321";
+ctx.fillRect(300,200,50,120);
+
+ctx.fillStyle="green";
+ctx.beginPath();
+ctx.arc(325,180,60,0,Math.PI*2);
+ctx.fill();
+
+ctx.fillStyle="#ffcc99";
+ctx.fillRect(player.x,player.y,player.size,player.size);
+
+}
+
+function gameLoop(){
+update();
+draw();
+requestAnimationFrame(gameLoop);
+}
+</script>
+
+</body>
+</html>
