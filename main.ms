@@ -609,3 +609,511 @@ function renderTutorial() {
   const enemyPct = Math.max(0, Math.min(100, (tutorialState.enemyHp / 18) * 100));
   return `
     <se
+ renderTutorial() {
+  const selected = getCharacter(save.selectedCharacter);
+  const hpPct = Math.max(0, Math.min(100, (tutorialState.playerHp / 24) * 100));
+  const enemyPct = Math.max(0, Math.min(100, (tutorialState.enemyHp / 18) * 100));
+  return `
+    <section class="screen">
+      <div class="battle-layout">
+        <div class="battle-card battle-stage panel">
+          <div class="main-header">
+            <div>
+              <h2>Batalha teste</h2>
+              <p>Aprenda ataque, defesa e agilidade antes de liberar o jogo completo.</p>
+            </div>
+            <div class="chips">
+              <span class="chip">Personagem: ${escapeHtml(selected.name)}</span>
+              <span class="chip">Habilidade: ${escapeHtml(selected.ability)}</span>
+            </div>
+          </div>
+          <div class="battle-arena">
+            <div class="arena-row">
+              <div class="combatant">
+                <div class="combatant-head">
+                  <strong>${escapeHtml(selected.name)}</strong>
+                  <span>${tutorialState.playerHp}/24 HP</span>
+                </div>
+                <div class="hp-bar"><div class="hp-fill" style="width:${hpPct}%"></div></div>
+                <div class="battle-avatar">${escapeHtml(selected.icon)}</div>
+              </div>
+              <div class="combatant enemy">
+                <div class="combatant-head">
+                  <strong>Boneco de treino</strong>
+                  <span>${tutorialState.enemyHp}/18 HP</span>
+                </div>
+                <div class="hp-bar"><div class="hp-fill enemy" style="width:${enemyPct}%"></div></div>
+                <div class="battle-avatar">🎯</div>
+              </div>
+            </div>
+          </div>
+          <div class="battle-controls">
+            <div class="hint-box">
+              Escolha uma ação. Ataque causa dano, Defesa reduz o contra-ataque, e Agilidade tenta esquivar.
+            </div>
+            <div class="battle-actions">
+              <button class="small-button is-primary" data-action="attack">Ataque</button>
+              <button class="small-button" data-action="defend">Defesa</button>
+              <button class="small-button" data-action="agility">Agilidade</button>
+              <button class="small-button" id="skipTutorial">Pular treino</button>
+            </div>
+          </div>
+        </div>
+        <aside class="sidebar panel">
+          <div class="section-title">
+            <h3>Diário de treino</h3>
+            <span class="muted">Etapa inicial</span>
+          </div>
+          <div class="battle-log">
+            ${
+              tutorialState.log.length
+                ? tutorialState.log.map((entry) => `<p>${escapeHtml(entry)}</p>`).join("")
+                : "<p>Prepare-se para atacar o boneco e aprender o ritmo da batalha.</p>"
+            }
+          </div>
+          <div class="section-card" style="margin-top:16px">
+            <h3>Recompensas do treino</h3>
+            <p class="muted">Ao concluir, você recebe moedas, diamantes e libera o hub do jogo.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+  `;
+}
+
+function renderCompletion() {
+  const account = save.account ?? { name: "Jogador", username: "sem-usuario" };
+  const selected = getCharacter(save.selectedCharacter);
+  return `
+    <section class="screen">
+      <div class="completion-grid">
+        <div class="completion-card">
+          <span class="eyebrow">Concluído</span>
+          <h2>${escapeHtml(account.name)} entrou no mundo</h2>
+          <p class="hero-text">
+            Usuário: <strong>@${escapeHtml(account.username)}</strong><br />
+            Você já concluiu a batalha teste e liberou os personagens, caixas, campanha e história.
+          </p>
+          <div class="resource-grid">
+            <div class="resource">
+              <strong>${save.coins}</strong>
+              <span>Moedas</span>
+            </div>
+            <div class="resource">
+              <strong>${save.gems}</strong>
+              <span>Diamantes</span>
+            </div>
+            <div class="resource">
+              <strong>${save.ownedCharacters.length}</strong>
+              <span>Personagens</span>
+            </div>
+          </div>
+          <div class="row-actions">
+            <button class="button button-primary" id="goHub">Abrir hub</button>
+            <button class="button button-secondary" id="replayTutorial">Rejogar treino</button>
+          </div>
+        </div>
+        <div class="completion-card">
+          <div class="section-title">
+            <h3>Personagem inicial</h3>
+            <span class="muted">Selecionado: ${escapeHtml(selected.name)}</span>
+          </div>
+          <div class="character-card is-selected">
+            <div class="character-top">
+              <div>
+                <span class="character-tag rarity-${selected.rarity}">${selected.rarity}</span>
+                <h4 style="margin:12px 0 4px">${escapeHtml(selected.name)}</h4>
+                <p class="muted">${escapeHtml(selected.role)}</p>
+              </div>
+              <div style="font-size:2rem">${escapeHtml(selected.icon)}</div>
+            </div>
+            <ul class="ability-list">
+              <li><strong>Habilidade:</strong> ${escapeHtml(selected.ability)}</li>
+              <li><strong>Bônus:</strong> ${escapeHtml(selected.bonus)}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderHub() {
+  const account = save.account ?? { name: "Jogador", username: "sem-usuario" };
+  const selected = getCharacter(save.selectedCharacter);
+  const tab = save.activeTab ?? "colecao";
+  return `
+    <section class="screen">
+      <div class="content-grid">
+        <aside class="sidebar panel">
+          <div class="profile-head">
+            <div class="avatar">${escapeHtml((account.name || "J").slice(0, 1).toUpperCase())}</div>
+            <div>
+              <h2>${escapeHtml(account.name)}</h2>
+              <p>@${escapeHtml(account.username)}</p>
+            </div>
+          </div>
+          <div class="resource-grid">
+            <div class="resource">
+              <strong>${save.coins}</strong>
+              <span>Moedas</span>
+            </div>
+            <div class="resource">
+              <strong>${save.gems}</strong>
+              <span>Diamantes</span>
+            </div>
+            <div class="resource">
+              <strong>${save.boxesOpened}</strong>
+              <span>Caixas</span>
+            </div>
+          </div>
+          <div class="section-card">
+            <strong>Selecionado</strong>
+            <p class="muted">${escapeHtml(selected.name)} - nível ${save.characterUpgrades[selected.id]?.level ?? 1}</p>
+          </div>
+          <div class="nav-list">
+            <button class="nav-button ${tab === "colecao" ? "is-active" : ""}" data-tab="colecao">Coleção</button>
+            <button class="nav-button ${tab === "caixas" ? "is-active" : ""}" data-tab="caixas">Caixas</button>
+            <button class="nav-button ${tab === "batalha" ? "is-active" : ""}" data-tab="batalha">Batalha</button>
+            <button class="nav-button ${tab === "campanha" ? "is-active" : ""}" data-tab="campanha">Campanha</button>
+            <button class="nav-button ${tab === "historia" ? "is-active" : ""}" data-tab="historia">Modo história</button>
+          </div>
+        </aside>
+        <section class="main-panel panel">
+          <div class="main-header">
+            <div>
+              <h2>Hub principal</h2>
+              <p>Monte sua equipe, abra caixas, melhore personagens e avance pelas batalhas.</p>
+            </div>
+            <div class="chips">
+              <span class="chip">Conta salva</span>
+              <span class="chip">Treino concluído</span>
+              <span class="chip">${save.storyUnlocked ? "História liberada" : "História bloqueada"}</span>
+            </div>
+          </div>
+          ${renderTabContent(tab)}
+        </section>
+      </div>
+    </section>
+  `;
+}
+
+function renderTabContent(tab) {
+  if (tab === "colecao") return renderCollectionTab();
+  if (tab === "caixas") return renderBoxTab();
+  if (tab === "batalha") return renderBattleTab();
+  if (tab === "campanha") return renderCampaignTab();
+  if (tab === "historia") return renderStoryTab();
+  return renderCollectionTab();
+}
+
+function renderCollectionTab() {
+  return `
+    <div class="section-stack">
+      <section class="section-card">
+        <div class="section-title">
+          <h3>Seus personagens</h3>
+          <span class="muted">10 disponíveis para coleção e evolução</span>
+        </div>
+        <div class="grid-cards">
+          ${characterCatalog
+            .map((character) => {
+              const owned = save.ownedCharacters.includes(character.id);
+              const upgrades = save.characterUpgrades[character.id] ?? { level: 1, shards: 0, skin: "Padrão" };
+              const selected = save.selectedCharacter === character.id;
+              return `
+                <article class="character-card ${selected ? "is-selected" : ""}">
+                  <div class="character-top">
+                    <div>
+                      <span class="character-tag rarity-${character.rarity}">${character.rarity}</span>
+                      <h4>${escapeHtml(character.name)}</h4>
+                      <p class="muted">${escapeHtml(character.role)}</p>
+                    </div>
+                    <div style="font-size:2rem">${escapeHtml(character.icon)}</div>
+                  </div>
+                  <ul class="ability-list">
+                    <li><strong>Habilidade:</strong> ${escapeHtml(character.ability)}</li>
+                    <li><strong>Bônus:</strong> ${escapeHtml(character.bonus)}</li>
+                    <li><strong>Stats:</strong> ATK ${character.stats.atk} / DEF ${character.stats.def} / SPD ${character.stats.spd}</li>
+                    <li><strong>Nível:</strong> ${upgrades.level} | <strong>Cartas:</strong> ${upgrades.shards} | <strong>Skin:</strong> ${escapeHtml(upgrades.skin ?? "Padrão")}</li>
+                  </ul>
+                  <div class="card-actions">
+                    <button class="small-button ${selected ? "is-primary" : ""}" data-select-character="${character.id}">
+                      ${selected ? "Ativo" : owned ? "Selecionar" : "Desbloquear"}
+                    </button>
+                    <button class="small-button" data-upgrade-character="${character.id}">Upar com diamantes</button>
+                  </div>
+                </article>
+              `;
+            })
+            .join("")}
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function renderBoxTab() {
+  return `
+    <div class="section-stack">
+      <section class="section-card">
+        <div class="section-title">
+          <h3>Caixas e recompensas</h3>
+          <span class="muted">Moedas compram caixas, diamantes upam personagens</span>
+        </div>
+        <div class="grid-cards">
+          ${boxCatalog
+            .map(
+              (box) => `
+                <article class="box-card">
+                  <h4>${escapeHtml(box.name)}</h4>
+                  <p>${escapeHtml(box.description)}</p>
+                  <div class="row-actions">
+                    <span class="chip">${box.costCoins} moedas</span>
+                    <button class="small-button is-primary" data-open-box="${box.id}">Abrir caixa</button>
+                  </div>
+                </article>
+              `,
+            )
+            .join("")}
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function renderBattleTab() {
+  return `
+    <div class="section-stack">
+      <section class="battle-card">
+        <div class="section-title">
+          <h3>Modos de batalha</h3>
+          <span class="muted">Selecione um modo e teste sua equipe</span>
+        </div>
+        <div class="grid-cards">
+          <article class="mode-card">
+            <h4>Campanha</h4>
+            <p>Três fases progressivas para aprender ritmo de jogo e ganhar recompensas.</p>
+            <button class="small-button is-primary" data-go-tab="campanha">Abrir campanha</button>
+          </article>
+          <article class="mode-card">
+            <h4>Modo história</h4>
+            <p>Acompanhe a invasão do monstro que destruiu a cidade e lute para restaurar o mundo.</p>
+            <button class="small-button is-primary" data-go-tab="historia">Abrir história</button>
+          </article>
+          <article class="mode-card">
+            <h4>Treino livre</h4>
+            <p>Use seu personagem selecionado para testar combos sem perder progresso.</p>
+            <button class="small-button is-primary" id="freeBattle">Iniciar treino</button>
+          </article>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function renderCampaignTab() {
+  return `
+    <div class="section-stack">
+      <section class="section-card">
+        <div class="section-title">
+          <h3>Campanha</h3>
+          <span class="muted">${save.campaignCleared}/3 fases concluídas</span>
+        </div>
+        <div class="mission-list">
+          ${campaignPhases
+            .map((phase, index) => {
+              const done = save.battleProgress.campaign[index];
+              return `
+                <article class="campaign-card">
+                  <div class="mission">
+                    <div>
+                      <strong>${escapeHtml(phase.title)}</strong>
+                      <small>${escapeHtml(phase.description)}</small>
+                    </div>
+                    <div>
+                      <div class="muted">${escapeHtml(phase.enemy)} | HP ${phase.hp}</div>
+                      <div class="muted">${phase.rewardCoins} moedas + ${phase.rewardGems} diamantes</div>
+                    </div>
+                  </div>
+                  <div class="row-actions" style="margin-top:12px">
+                    <button class="small-button is-primary" data-play-campaign="${index}">
+                      ${done ? "Rejogar" : "Jogar fase"}
+                    </button>
+                  </div>
+                </article>
+              `;
+            })
+            .join("")}
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function renderStoryTab() {
+  return `
+    <div class="section-stack">
+      <section class="section-card">
+        <div class="section-title">
+          <h3>Modo história</h3>
+          <span class="muted">${save.storyUnlocked ? "Disponível" : "Conclua a campanha para liberar"}</span>
+        </div>
+        <div class="story-panel">
+          <h4>A invasão do monstro</h4>
+          <p>
+            O monstro rasgou o céu, invadiu a cidade e deixou prédios, ruas e sistemas de energia em ruínas.
+            Sua missão é vencer os capítulos e restaurar o mundo.
+          </p>
+        </div>
+        <div class="grid-cards" style="margin-top:16px">
+          ${storyChapters
+            .map((chapter, index) => {
+              const unlocked = save.storyUnlocked || index === 0;
+              const done = save.battleProgress.story[index];
+              return `
+                <article class="mode-card">
+                  <h4>${escapeHtml(chapter.title)}</h4>
+                  <p>${escapeHtml(chapter.text)}</p>
+                  <button class="small-button is-primary" data-play-story="${index}" ${unlocked ? "" : "disabled"}>
+                    ${done ? "Rejogar" : unlocked ? "Jogar capítulo" : "Bloqueado"}
+                  </button>
+                </article>
+              `;
+            })
+            .join("")}
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function render() {
+  if (save.screen === "landing") {
+    app.innerHTML = renderLanding();
+  } else if (save.screen === "signup") {
+    app.innerHTML = renderSignup();
+  } else if (save.screen === "tutorial") {
+    app.innerHTML = renderTutorial();
+  } else if (save.screen === "completion") {
+    app.innerHTML = renderCompletion();
+  } else {
+    app.innerHTML = renderHub();
+  }
+  syncOrientationGate();
+  bindEvents();
+}
+
+function bindEvents() {
+  const startGame = document.querySelector("#startGame");
+  startGame?.addEventListener("click", () => {
+    setScreen("signup");
+  });
+
+  const restoreSave = document.querySelector("#restoreSave");
+  restoreSave?.addEventListener("click", () => {
+    if (save.account) {
+      setScreen(save.tutorialDone ? "completion" : "signup");
+      if (save.tutorialDone) {
+        setScreen("completion");
+      }
+    } else {
+      toast("Sem progresso", "Crie a conta primeiro para salvar os avanços.");
+    }
+  });
+
+  const backHome = document.querySelector("#backHome");
+  backHome?.addEventListener("click", () => setScreen("landing"));
+
+  const signupForm = document.querySelector("#signupForm");
+  signupForm?.addEventListener("submit", handleSignupSubmit);
+
+  const skipTutorial = document.querySelector("#skipTutorial");
+  skipTutorial?.addEventListener("click", () => {
+    save.battleProgress.tutorial.done = true;
+    save.tutorialDone = true;
+    save.coins += 80;
+    save.gems += 6;
+    save.storyUnlocked = true;
+    persist();
+    setScreen("completion");
+    toast("Treino pulado", "Você entrou direto na tela concluída com recompensas de entrada.");
+  });
+
+  const replayTutorial = document.querySelector("#replayTutorial");
+  replayTutorial?.addEventListener("click", startTutorialBattle);
+
+  const goHub = document.querySelector("#goHub");
+  goHub?.addEventListener("click", () => setScreen("hub"));
+
+  const freeBattle = document.querySelector("#freeBattle");
+  freeBattle?.addEventListener("click", () => {
+    toast("Treino livre", "Em seguida você pode usar campanha, história ou abrir caixas.");
+    setScreen("hub");
+    setTab("batalha");
+  });
+
+  document.querySelectorAll("[data-action]").forEach((button) => {
+    button.addEventListener("click", () => {
+      tutorialAction(button.getAttribute("data-action"));
+    });
+  });
+
+  document.querySelectorAll("[data-tab]").forEach((button) => {
+    button.addEventListener("click", () => setTab(button.getAttribute("data-tab")));
+  });
+
+  document.querySelectorAll("[data-go-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      setScreen("hub");
+      setTab(button.getAttribute("data-go-tab"));
+    });
+  });
+
+  document.querySelectorAll("[data-select-character]").forEach((button) => {
+    button.addEventListener("click", () => selectCharacter(button.getAttribute("data-select-character")));
+  });
+
+  document.querySelectorAll("[data-upgrade-character]").forEach((button) => {
+    button.addEventListener("click", () => upgradeCharacter(button.getAttribute("data-upgrade-character")));
+  });
+
+  document.querySelectorAll("[data-open-box]").forEach((button) => {
+    button.addEventListener("click", () => openBox(button.getAttribute("data-open-box")));
+  });
+
+  document.querySelectorAll("[data-play-campaign]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const index = Number(button.getAttribute("data-play-campaign"));
+      const phase = campaignPhases[index];
+      const won = startModeBattle("campaign", index);
+      if (!won) {
+        toast("Campanha", `Tente novamente ${phase.title}.`);
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-play-story]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const index = Number(button.getAttribute("data-play-story"));
+      if (!save.storyUnlocked && index > 0) {
+        toast("Bloqueado", "Conclua a campanha para liberar os próximos capítulos.");
+        return;
+      }
+      startModeBattle("story", index);
+    });
+  });
+}
+
+window.addEventListener("resize", syncOrientationGate);
+window.addEventListener("orientationchange", syncOrientationGate);
+window.add
